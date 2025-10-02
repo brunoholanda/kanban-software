@@ -170,10 +170,11 @@ const LoginPage = () => {
   }, [googleLogin, navigate]);
 
   const handleGoogleLogin = () => {
-    // Usar a rota do backend que já está configurada corretamente
-    const backendUrl = 'http://localhost:3001/auth/google';
+    // Usar a variável de ambiente para a URL do backend
+    const backendUrl = `${import.meta.env.VITE_API_URL}/auth/google`;
     
     console.log('🚀 Iniciando login com Google...');
+    console.log('🌐 Backend URL:', backendUrl);
     
     // Abrir popup
     const popup = window.open(
@@ -188,8 +189,10 @@ const LoginPage = () => {
       console.log('📍 Origin:', event.origin);
       console.log('📋 Data:', event.data);
       
-      if (event.origin !== 'http://localhost:3001') {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (event.origin !== apiUrl) {
         console.log('❌ Origin não autorizada:', event.origin);
+        console.log('🎯 Origin esperada:', apiUrl);
         return;
       }
       
