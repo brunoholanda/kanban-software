@@ -137,7 +137,7 @@ const LoginPage = () => {
         } else {
           setError(result.error);
         }
-      } catch (error) {
+      } catch {
         setError('Erro ao fazer login com Google. Tente novamente.');
       } finally {
         setLoading(false);
@@ -170,8 +170,9 @@ const LoginPage = () => {
   }, [googleLogin, navigate]);
 
   const handleGoogleLogin = () => {
-    // Usar a variável de ambiente para a URL do backend
-    const backendUrl = `${import.meta.env.VITE_API_URL}/auth/google`;
+    // Usar a variável de ambiente para a URL do backend (com fallback)
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://kanban.api.brunoholanda.com';
+    const backendUrl = `${API_BASE_URL}/auth/google`;
     
     console.log('🚀 Iniciando login com Google...');
     console.log('🌐 Backend URL:', backendUrl);
@@ -189,7 +190,7 @@ const LoginPage = () => {
       console.log('📍 Origin:', event.origin);
       console.log('📋 Data:', event.data);
       
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://kanban.api.brunoholanda.com';
       if (event.origin !== apiUrl) {
         console.log('❌ Origin não autorizada:', event.origin);
         console.log('🎯 Origin esperada:', apiUrl);
@@ -263,7 +264,7 @@ const LoginPage = () => {
       } else {
         setError(result.error);
       }
-    } catch (error) {
+    } catch {
       setError('Erro inesperado. Tente novamente.');
     } finally {
       setLoading(false);
