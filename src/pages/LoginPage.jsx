@@ -111,7 +111,7 @@ const GoogleButton = styled(Button)`
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login, googleLogin, setUser, setToken } = useAuth();
+  const { /* login, */ googleLogin, setUser, setToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -281,6 +281,8 @@ const LoginPage = () => {
     }, 1000);
   };
 
+  // Função de login tradicional comentada - apenas Google OAuth disponível
+  /*
   const handleSubmit = async (values) => {
     setLoading(true);
     setError('');
@@ -299,6 +301,7 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  */
 
   return (
     <LoginContainer>
@@ -320,6 +323,8 @@ const LoginPage = () => {
           />
         )}
 
+        {/* Formulário de login tradicional comentado - apenas Google OAuth disponível */}
+        {/* 
         <StyledForm
           name="login"
           onFinish={handleSubmit}
@@ -364,6 +369,16 @@ const LoginPage = () => {
         </StyledForm>
 
         <Divider>ou</Divider>
+        */}
+
+        {/* Aviso sobre email corporativo */}
+        <Alert
+          message="Acesso Restrito"
+          description="Somente emails corporativos podem fazer login no sistema."
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
 
         <GoogleButton
           onClick={handleGoogleLogin}

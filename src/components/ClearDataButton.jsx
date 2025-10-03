@@ -26,7 +26,7 @@ const ClearDataButton = ({ onClearData }) => {
   }
 
   return (
-    <>
+    <>{/*
       <ClearButton
         type="default"
         danger
@@ -34,7 +34,8 @@ const ClearDataButton = ({ onClearData }) => {
         onClick={() => setIsModalVisible(true)}
       >
         Limpar Dados
-      </ClearButton>
+      </ClearButton>nv
+*/}
       <Modal
         title="Limpar Todos os Dados"
         open={isModalVisible}
