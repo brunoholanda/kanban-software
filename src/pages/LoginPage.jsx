@@ -175,7 +175,17 @@ const LoginPage = () => {
     const backendUrl = `${API_BASE_URL}/auth/google`;
     
     console.log('🚀 Iniciando login com Google...');
+    console.log('🌐 VITE_API_URL:', import.meta.env.VITE_API_URL);
+    console.log('🌐 API_BASE_URL:', API_BASE_URL);
     console.log('🌐 Backend URL:', backendUrl);
+    
+    // Verificar se a URL está correta
+    if (!backendUrl.includes('kanban.api.brunoholanda.com')) {
+      console.error('❌ URL incorreta! Deveria conter kanban.api.brunoholanda.com');
+      console.error('❌ URL atual:', backendUrl);
+      setError('Erro de configuração: URL do backend incorreta');
+      return;
+    }
     
     // Abrir popup
     const popup = window.open(
