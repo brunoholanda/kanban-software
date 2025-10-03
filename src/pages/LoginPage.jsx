@@ -188,11 +188,30 @@ const LoginPage = () => {
     }
     
     // Abrir popup
+    console.log('🔍 Tentando abrir popup com URL:', backendUrl);
     const popup = window.open(
       backendUrl,
       'googleAuth',
       'width=500,height=600,scrollbars=yes,resizable=yes'
     );
+    
+    // Verificar se o popup foi aberto
+    if (!popup || popup.closed || typeof popup.closed == 'undefined') {
+      console.error('❌ Popup foi bloqueado pelo navegador!');
+      setError('Popup foi bloqueado pelo navegador. Permita popups para este site.');
+      return;
+    }
+    
+    console.log('✅ Popup aberto com sucesso');
+    
+    // Verificar a URL do popup após um pequeno delay
+    setTimeout(() => {
+      try {
+        console.log('🔍 URL atual do popup:', popup.location.href);
+      } catch (e) {
+        console.log('⚠️ Não foi possível acessar a URL do popup (cross-origin):', e.message);
+      }
+    }, 1000);
     
     // Escutar mensagem do popup
     const messageListener = (event) => {
