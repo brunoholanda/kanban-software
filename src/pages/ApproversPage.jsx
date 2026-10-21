@@ -9,18 +9,18 @@ import { useAuth } from '../hooks/useAuth';
 const { Title, Text } = Typography;
 
 const PageContainer = styled.div`
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 20px;
+  min-height: calc(100vh - 72px);
+  background-color: #eef2f7;
+  padding: 20px 24px 32px;
 `;
 
 const HeaderContainer = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #4f46e5 100%);
+  border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
   color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
 `;
 
 const HeaderContent = styled.div`

@@ -1,63 +1,75 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  pointerWithin,
   rectIntersection,
+  MeasuringStrategy,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { message, Spin } from 'antd';
 import KanbanColumn from './KanbanColumn';
 import KanbanCard from './KanbanCard';
 import AddCardModal from './AddCardModal';
 import EditCardModal from './EditCardModal';
 import FloatingAddButton from './FloatingAddButton';
-import EmptyState from './EmptyState';
 import ClearDataButton from './ClearDataButton';
 import TopNavigation from './TopNavigation';
 import ApproversFilter from './ApproversFilter';
+import ArchivedBoard from './ArchivedBoard';
 import useCards from '../hooks/useCards';
+import { KANBAN_COLUMNS } from '../constants/columns';
 
-const AppContainer = styled.div`
-  min-height: 100vh;
-  background-color: #f5f5f5;
+const BoardShell = styled.div`
+  min-height: calc(100vh - 72px);
 `;
 
 const BoardContainer = styled.div`
-  padding: 20px;
-  min-height: calc(100vh - 100px);
+  padding: 20px 24px 32px;
 `;
 
 const ControlsContainer = styled.div`
   display: flex;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: stretch;
 `;
 
 const KanbanColumns = styled.div`
   display: flex;
-  gap: 20px;
-  flex: 1;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  min-height: 420px;
 `;
 
+const LoadingWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  height: 50vh;
+  color: #64748b;
+`;
 
-const columns = [
-  { id: 'aberta', title: 'Aberta', color: '#52c41a' },
-  { id: 'pendente-aprovacao-1', title: 'Pendente Aprovação 1', color: '#1890ff' },
-  { id: 'pendente-aprovacao-2', title: 'Pendente Aprovação 2', color: '#faad14' },
-  { id: 'pendente-execucao', title: 'Pendente de Execução', color: '#f5222d' },
-  { id: 'concluido', title: 'Concluído', color: '#722ed1' }
-];
+const OverlayWrap = styled.div`
+  width: 300px;
+`;
+
+const detectColumnCollision = (args) => {
+  const pointerHits = pointerWithin(args);
+  if (pointerHits.length > 0) {
+    return pointerHits;
+  }
+  return rectIntersection(args);
+};
 
 const KanbanBoard = () => {
   const { cards, loading, addCard, updateCard, deleteCard, clearAllCards } = useCards();
@@ -65,82 +77,89 @@ const KanbanBoard = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
+  const [boardView, setBoardView] = useState('board');
   const [filters, setFilters] = useState({
-    approvers: []
+    approvers: [],
   });
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
+  );
+
+  const activeCards = useMemo(
+    () => cards.filter((card) => !card.archived),
+    [cards]
+  );
+  const archivedCards = useMemo(
+    () => cards.filter((card) => card.archived),
+    [cards]
   );
 
   const handleDragStart = (event) => {
     setActiveId(event.active.id);
   };
 
+  const resolveTargetStatus = (over) => {
+    if (!over) return null;
+    if (over.data?.current?.type === 'column') {
+      return over.id;
+    }
+    if (KANBAN_COLUMNS.some((col) => col.id === over.id)) {
+      return over.id;
+    }
+    const targetCard = cards.find((card) => card.id === over.id);
+    return targetCard?.status || null;
+  };
+
   const handleDragEnd = async (event) => {
     const { active, over } = event;
     setActiveId(null);
-
     if (!over) return;
 
-    const activeCard = cards.find(card => card.id === active.id);
-    if (!activeCard) return;
+    const activeCard = cards.find((card) => card.id === active.id);
+    if (!activeCard || activeCard.archived) return;
 
-    // Determinar o destino baseado no tipo de elemento sobre o qual foi solto
-    let targetStatus = null;
-    let targetIndex = null;
-    
-    // Se foi solto sobre uma coluna (droppable)
-    if (columns.some(col => col.id === over.id)) {
-      targetStatus = over.id;
-      targetIndex = 0; // Adicionar no início da coluna
-    }
-    // Se foi solto sobre outro card, usar o status desse card
-    else {
-      const targetCard = cards.find(card => card.id === over.id);
-      if (targetCard) {
-        targetStatus = targetCard.status;
-        // Encontrar a posição do card alvo na coluna
-        const cardsInTargetColumn = cards.filter(card => card.status === targetStatus);
-        targetIndex = cardsInTargetColumn.findIndex(card => card.id === over.id);
-      }
-    }
+    const targetStatus = resolveTargetStatus(over);
+    if (!targetStatus || targetStatus === activeCard.status) return;
 
-    if (!targetStatus) return;
-
-    // Se o card foi solto em uma coluna diferente, atualizar status
-    if (targetStatus !== activeCard.status) {
-      try {
-        await updateCard(activeCard.id, { status: targetStatus });
-      } catch (error) {
-        console.error('Error updating card status:', error);
-      }
+    try {
+      await updateCard(activeCard.id, { status: targetStatus });
+    } catch (error) {
+      message.error('Não foi possível mover a GMUD. Tente novamente.');
+      console.error('Error updating card status:', error);
     }
   };
 
+  const handleDragCancel = () => {
+    setActiveId(null);
+  };
+
   const getCardsByStatus = (status) => {
-    let filteredCards = cards.filter(card => card.status === status);
-    
-    // Aplicar filtro de aprovadores (global)
+    let filteredCards = activeCards.filter((card) => card.status === status);
+
     if (filters.approvers.length > 0) {
-      filteredCards = filteredCards.filter(card => 
-        card.approvers.some(approver => {
+      filteredCards = filteredCards.filter((card) =>
+        (card.approvers || []).some((approver) => {
           const approverName = approver.fullName || approver;
           return filters.approvers.includes(approverName);
         })
       );
     }
-    
+
     return filteredCards;
   };
 
   const handleAddCard = async (newCard) => {
     try {
       await addCard(newCard);
+      message.success('GMUD criada com sucesso');
     } catch (error) {
+      message.error('Erro ao criar a GMUD');
       console.error('Error adding card:', error);
     }
   };
@@ -156,7 +175,9 @@ const KanbanBoard = () => {
   const handleDeleteCard = async (cardId) => {
     try {
       await deleteCard(cardId);
+      message.success('GMUD excluída');
     } catch (error) {
+      message.error('Erro ao excluir a GMUD');
       console.error('Error deleting card:', error);
     }
   };
@@ -169,111 +190,129 @@ const KanbanBoard = () => {
   const handleUpdateCard = async (updatedCard) => {
     try {
       await updateCard(updatedCard.id, updatedCard);
+      message.success('GMUD atualizada');
     } catch (error) {
+      message.error('Erro ao atualizar a GMUD');
       console.error('Error updating card:', error);
     }
   };
 
-  const handleFiltersChange = (newFilters) => {
-    setFilters(newFilters);
+  const handleArchiveCard = async (card) => {
+    try {
+      await updateCard(card.id, { archived: true });
+      message.success('GMUD arquivada');
+    } catch (error) {
+      message.error('Erro ao arquivar a GMUD');
+      console.error('Error archiving card:', error);
+    }
   };
 
-  // Calcular estatísticas
-  const getOverdueCards = () => {
-    const today = new Date();
-    return cards.filter(card => {
-      const executionDate = new Date(card.executionForecast);
-      return executionDate < today && card.status !== 'concluido';
-    }).length;
+  const handleRestoreCard = async (card) => {
+    try {
+      await updateCard(card.id, { archived: false });
+      message.success('GMUD restaurada para o quadro');
+    } catch (error) {
+      message.error('Erro ao restaurar a GMUD');
+      console.error('Error restoring card:', error);
+    }
   };
 
-  const activeCard = cards.find(card => card.id === activeId);
-  const overdueCards = getOverdueCards();
+  const activeCard = cards.find((card) => card.id === activeId);
 
-  // Mostrar loading durante carregamento inicial
   if (loading && cards.length === 0) {
     return (
-      <AppContainer>
+      <BoardShell>
         <BoardContainer>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '50vh',
-            fontSize: '18px',
-            color: '#666'
-          }}>
+          <LoadingWrap>
+            <Spin size="large" />
             Carregando GMUDs...
-          </div>
+          </LoadingWrap>
         </BoardContainer>
-      </AppContainer>
+      </BoardShell>
     );
   }
 
   return (
-    <AppContainer>
+    <BoardShell>
       <DndContext
         sensors={sensors}
-        collisionDetection={rectIntersection}
+        collisionDetection={detectColumnCollision}
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         <BoardContainer>
           <ControlsContainer>
-            <TopNavigation onAddGMUD={() => setIsModalVisible(true)} />
-            <ApproversFilter onFiltersChange={handleFiltersChange} />
+            <TopNavigation
+              onAddGMUD={() => setIsModalVisible(true)}
+              boardView={boardView}
+              onChangeView={setBoardView}
+              archivedCount={archivedCards.length}
+            />
+            {boardView === 'board' && (
+              <ApproversFilter onFiltersChange={setFilters} />
+            )}
           </ControlsContainer>
-          
-          {cards.length === 0 ? (
-            <EmptyState />
+
+          {boardView === 'archived' ? (
+            <ArchivedBoard
+              cards={archivedCards}
+              onDeleteCard={handleDeleteCard}
+              onRestoreCard={handleRestoreCard}
+            />
           ) : (
             <KanbanColumns>
-              {columns.map(column => (
+              {KANBAN_COLUMNS.map((column) => (
                 <KanbanColumn
                   key={column.id}
                   column={column}
                   cards={getCardsByStatus(column.id)}
                   onDeleteCard={handleDeleteCard}
                   onEditCard={handleEditCard}
+                  onArchiveCard={handleArchiveCard}
                 />
               ))}
             </KanbanColumns>
           )}
         </BoardContainer>
-      
-        <DragOverlay>
+
+        <DragOverlay dropAnimation={{ duration: 180, easing: 'ease' }}>
           {activeCard ? (
-            <KanbanCard 
-              card={activeCard} 
-              onDelete={() => {}} 
-              onEdit={() => {}} 
-            />
+            <OverlayWrap>
+              <KanbanCard
+                card={activeCard}
+                isOverlay
+                onDelete={() => {}}
+                onEdit={() => {}}
+              />
+            </OverlayWrap>
           ) : null}
         </DragOverlay>
-      
-      <AddCardModal
-        isVisible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        onAddCard={handleAddCard}
-      />
-      
-      <EditCardModal
-        isVisible={isEditModalVisible}
-        onClose={() => {
-          setIsEditModalVisible(false);
-          setEditingCard(null);
-        }}
-        onEditCard={handleUpdateCard}
-        card={editingCard}
-      />
-      
-      <FloatingAddButton onClick={() => setIsModalVisible(true)} />
-      
+
+        <AddCardModal
+          isVisible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          onAddCard={handleAddCard}
+        />
+
+        <EditCardModal
+          isVisible={isEditModalVisible}
+          onClose={() => {
+            setIsEditModalVisible(false);
+            setEditingCard(null);
+          }}
+          onEditCard={handleUpdateCard}
+          card={editingCard}
+        />
+
+        <FloatingAddButton onClick={() => setIsModalVisible(true)} />
+
         {cards.length > 0 && (
           <ClearDataButton onClearData={handleClearData} />
         )}
       </DndContext>
-    </AppContainer>
+    </BoardShell>
   );
 };
 

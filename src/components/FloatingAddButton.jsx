@@ -1,38 +1,40 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 import { Plus } from 'lucide-react';
 
 const FloatingButton = styled(Button)`
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 41px;
+  bottom: 28px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.35);
   z-index: 1000;
   border: none;
-  
+
   &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 16px 32px rgba(37, 99, 235, 0.4);
   }
 `;
 
 const FloatingAddButton = ({ onClick }) => {
   return (
-    <FloatingButton
-      type="primary"
-      size="large"
-      icon={<Plus size={24} />}
-      onClick={onClick}
-    />
+    <Tooltip title="Nova GMUD" placement="left">
+      <FloatingButton
+        type="primary"
+        size="large"
+        icon={<Plus size={24} />}
+        onClick={onClick}
+        aria-label="Nova GMUD"
+      />
+    </Tooltip>
   );
 };
 
 export default FloatingAddButton;
-

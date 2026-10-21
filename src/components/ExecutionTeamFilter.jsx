@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, Select, Button, Tag } from 'antd';
 import { Users, X } from 'lucide-react';
 import styled from 'styled-components';
+import { RESPONSIBLE_TEAMS } from '../constants/teams';
 
 const FilterContainer = styled.div`
   margin-bottom: 12px;
@@ -42,13 +43,7 @@ const FilterTag = styled(Tag)`
 const ExecutionTeamFilter = ({ onTeamFilterChange }) => {
   const [selectedTeams, setSelectedTeams] = useState([]);
 
-  const teams = [
-    { value: 'Time Dev', label: 'Time Dev' },
-    { value: 'Operations', label: 'Operations' },
-    { value: 'Data', label: 'Data' },
-    { value: 'DevOps', label: 'DevOps' },
-    { value: 'Network', label: 'Network' }
-  ];
+  const teams = RESPONSIBLE_TEAMS;
 
   const handleTeamChange = (value) => {
     setSelectedTeams(value);

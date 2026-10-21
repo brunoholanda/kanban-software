@@ -6,12 +6,20 @@ import useApprovers from '../hooks/useApprovers';
 
 const FilterContainer = styled.div`
   flex: 1;
-  min-width: 300px;
+  min-width: 280px;
 `;
 
 const FilterCard = styled(Card)`
+  border-radius: 14px;
+  border-color: #e2e8f0;
+
   .ant-card-body {
     padding: 12px 16px;
+  }
+
+  .ant-card-head {
+    border-bottom: 0;
+    min-height: 42px;
   }
 `;
 
@@ -41,15 +49,15 @@ const ApproverAvatar = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: ${props => props.$isSelected ? '#1890ff' : '#f0f0f0'};
-  color: ${props => props.$isSelected ? 'white' : '#595959'};
+  background-color: ${props => props.$isSelected ? '#2563eb' : '#f1f5f9'};
+  color: ${props => props.$isSelected ? 'white' : '#475569'};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border: 2px solid ${props => props.$isSelected ? '#1890ff' : 'transparent'};
+  border: 2px solid ${props => props.$isSelected ? '#2563eb' : 'transparent'};
   transition: all 0.2s ease;
   
   &:hover {

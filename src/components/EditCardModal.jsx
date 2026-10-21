@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, DatePicker, Button, Select } from 'antd';
 import { createDayjsFromStorage, formatDateForStorage } from '../utils/dateConfig';
 import useApprovers from '../hooks/useApprovers';
+import { RESPONSIBLE_TEAMS } from '../constants/teams';
 
 const EditCardModal = ({ isVisible, onClose, onEditCard, card }) => {
   const [form] = Form.useForm();
@@ -130,22 +131,15 @@ const EditCardModal = ({ isVisible, onClose, onEditCard, card }) => {
         </Form.Item>
 
         <Form.Item
-          label="Executor"
+          label="Time responsável"
           name="executor"
-          rules={[{ required: true, message: 'Por favor, insira o executor!' }]}
+          rules={[{ required: true, message: 'Por favor, selecione o time responsável!' }]}
         >
           <Select
-            placeholder="Selecione o executor"
-            options={[
-              { value: 'João Silva', label: 'João Silva' },
-              { value: 'Maria Santos', label: 'Maria Santos' },
-              { value: 'Ana Costa', label: 'Ana Costa' },
-              { value: 'Pedro Lima', label: 'Pedro Lima' },
-              { value: 'Roberto Alves', label: 'Roberto Alves' },
-              { value: 'Carlos Oliveira', label: 'Carlos Oliveira' },
-              { value: 'Fernanda Rocha', label: 'Fernanda Rocha' },
-              { value: 'Juliana Mendes', label: 'Juliana Mendes' }
-            ]}
+            placeholder="Selecione o time responsável"
+            options={RESPONSIBLE_TEAMS}
+            showSearch
+            optionFilterProp="label"
           />
         </Form.Item>
 

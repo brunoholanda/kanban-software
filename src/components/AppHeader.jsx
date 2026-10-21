@@ -1,19 +1,22 @@
 import React from 'react';
-import { Button, Dropdown, Avatar, Typography } from 'antd';
-import { LogOut, User } from 'lucide-react';
+import { Dropdown, Avatar, Typography } from 'antd';
+import { LogOut, User, LayoutGrid } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../hooks/useAuth';
 
 const { Text } = Typography;
 
-const HeaderContainer = styled.div`
+const HeaderContainer = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #4f46e5 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 `;
 
 const LogoSection = styled.div`
@@ -22,11 +25,32 @@ const LogoSection = styled.div`
   gap: 12px;
 `;
 
+const LogoMark = styled.div`
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const LogoCopy = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 const LogoTitle = styled.h2`
   margin: 0;
   color: white;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+`;
+
+const LogoSubtitle = styled.span`
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
 `;
 
 const UserSection = styled.div`
@@ -43,33 +67,17 @@ const UserInfo = styled.div`
 
 const UserName = styled(Text)`
   color: white !important;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
 `;
 
 const UserRole = styled(Text)`
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
   font-size: 12px;
-`;
-
-const LogoutButton = styled(Button)`
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-  color: white;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.7);
-    color: white;
-  }
 `;
 
 const AppHeader = () => {
   const { user, logout } = useAuth();
-
-  const handleLogout = () => {
-    logout();
-  };
 
   const getInitials = (firstName, lastName) => {
     return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
@@ -80,7 +88,7 @@ const AppHeader = () => {
       key: 'profile',
       icon: <User size={16} />,
       label: 'Perfil',
-      disabled: true, // Por enquanto desabilitado
+      disabled: true,
     },
     {
       type: 'divider',
@@ -89,14 +97,20 @@ const AppHeader = () => {
       key: 'logout',
       icon: <LogOut size={16} />,
       label: 'Sair',
-      onClick: handleLogout,
+      onClick: logout,
     },
   ];
 
   return (
     <HeaderContainer>
       <LogoSection>
-        <LogoTitle>Kanban GMUD</LogoTitle>
+        <LogoMark>
+          <LayoutGrid size={18} />
+        </LogoMark>
+        <LogoCopy>
+          <LogoTitle>Kanban GMUD</LogoTitle>
+          <LogoSubtitle>Gestão de mudanças e aprovações</LogoSubtitle>
+        </LogoCopy>
       </LogoSection>
 
       <UserSection>
@@ -104,7 +118,7 @@ const AppHeader = () => {
           <UserName>{user?.firstName} {user?.lastName}</UserName>
           <UserRole>@{user?.username}</UserRole>
         </UserInfo>
-        
+
         <Dropdown
           menu={{ items: menuItems }}
           placement="bottomRight"
@@ -112,10 +126,10 @@ const AppHeader = () => {
         >
           <Avatar
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              backgroundColor: 'rgba(255, 255, 255, 0.18)',
               color: 'white',
               cursor: 'pointer',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
+              border: '2px solid rgba(255, 255, 255, 0.28)',
             }}
             size={40}
           >
@@ -128,4 +142,3 @@ const AppHeader = () => {
 };
 
 export default AppHeader;
-

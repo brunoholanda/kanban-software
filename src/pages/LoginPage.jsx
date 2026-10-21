@@ -13,7 +13,7 @@ const LoginContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #4f46e5 100%);
   padding: 20px;
 `;
 
@@ -40,7 +40,7 @@ const LogoIcon = styled.div`
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%);
   border-radius: 50%;
   margin: 0 auto 16px;
   color: white;
@@ -81,11 +81,11 @@ const StyledForm = styled(Form)`
 
 const LoginButton = styled(Button)`
   width: 100%;
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%);
   border: none;
   
   &:hover {
-    background: linear-gradient(135deg, #40a9ff 0%, #9254de 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
   }
 `;
 
